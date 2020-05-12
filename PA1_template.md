@@ -6,7 +6,8 @@ output:
 ---
 
 
-```{r packages, warning=FALSE, message=FALSE}
+
+```r
 library(dplyr)
 library(ggplot2)
 options(scipen = 999)  # this removes any scientific notation formatting of numbers
@@ -14,7 +15,8 @@ options(scipen = 999)  # this removes any scientific notation formatting of numb
 
 ## Loading and preprocessing the data
 
-```{r}
+
+```r
 activity_data <- read.csv(unzip("activity.zip")) %>%
   mutate(date = as.Date(date))
 ```
@@ -23,7 +25,8 @@ activity_data <- read.csv(unzip("activity.zip")) %>%
 
 1. First, I calculated the total number of steps taken per day by using `group_by()` and `summarize()` from the the **dplyr** package.
 
-```{r}
+
+```r
 daily_activity <-
   activity_data %>%
   group_by(date) %>%
@@ -32,7 +35,8 @@ daily_activity <-
 
 2. Second, it is helpful to see how often different ranges of various step totals occurred, so I used the **ggplot2** package to create a histogram of the total number of steps taken each day. I divided the bins into widths of 1,000 steps, because this would be a natural way for a user to think about their daily step totals.
 
-```{r}
+
+```r
 ggplot(data = daily_activity,
        mapping = aes(x = daily_total)
        ) +
@@ -40,9 +44,12 @@ ggplot(data = daily_activity,
   theme_bw()
 ```
 
+![](PA1_template_files/figure-html/unnamed-chunk-3-1.png)<!-- -->
+
 3. Third, I calculated a daily mean and median number of steps taken per day.
 
-```{r}
+
+```r
 daily_mean <-
   daily_activity$daily_total %>%
   mean(na.rm = TRUE) %>%
@@ -53,13 +60,14 @@ daily_median <-
   median(na.rm = TRUE)
 ```
 
-The mean total number of steps taken per day was **`r daily_mean`** and the median total number of steps taken per day was **`r daily_median`**.
+The mean total number of steps taken per day was **9354.23** and the median total number of steps taken per day was **10395**.
 
 ## What is the average daily activity pattern?
 
 1. I made a time series plot of the 5-minute intervals (x-axis) and the mean number of steps taken, averaged across all days (y-axis).
 
-```{r}
+
+```r
 daily_pattern <-
   activity_data %>%
   group_by(interval) %>%
@@ -77,7 +85,9 @@ ggplot(data = daily_pattern,
   theme_bw()
 ```
 
-2. I found that the **`r high_interval` interval** is the 5-minute interval, on average across all the days in the dataset, that contains the maximum number of steps.
+![](PA1_template_files/figure-html/unnamed-chunk-5-1.png)<!-- -->
+
+2. I found that the **835 interval** is the 5-minute interval, on average across all the days in the dataset, that contains the maximum number of steps.
 
 ## Imputing missing values
 
@@ -85,7 +95,8 @@ There are a number of intervals and days with missing values (coded as `NA`). Th
 
 1. So, first I calculated the total number of missing values in the dataset (i.e. the total number of rows with `NA`s).
 
-```{r}
+
+```r
 number_of_missing <-
   activity_data %>%
   filter(is.na(steps)) %>%
@@ -94,13 +105,14 @@ number_of_missing <-
 p_missing <- round(100 * number_of_missing / nrow(activity_data), 2)
 ```
 
-I found **`r number_of_missing`** rows (`r p_missing`% of the dataset) contained `NA` (i.e., missing) values.
+I found **2304** rows (13.11% of the dataset) contained `NA` (i.e., missing) values.
 
 2. Second, I devised a strategy for filling in all of the missing values in the dataset. I took a fairly straightforward approach, substituting the mean (rounded to the nearest whole number) for the corresponding 5-minute interval for any `NA` values.
 
 3. Third, I implemented this strategy to create a new dataset, `activity_data_full`, that is equivalent to the original dataset, but with the missing data filled in.
 
-```{r}
+
+```r
 activity_data_full <-
   activity_data %>%
   left_join(daily_pattern, by = 'interval') %>%
@@ -113,7 +125,8 @@ activity_data_full <-
 
 4. Fourth, I made an updated histogram of the total number of steps taken each day, with bin widths of 1,000 steps as before.
 
-```{r}
+
+```r
 daily_activity_full <-
   activity_data_full %>%
   group_by(date) %>%
@@ -135,11 +148,13 @@ ggplot(data = daily_activity_full,
   theme_bw()
 ```
 
-Earlier, I reported the mean total number of steps taken per day is **`r daily_mean`** and the median total number of steps taken per day is **`r daily_median`**. 
+![](PA1_template_files/figure-html/unnamed-chunk-8-1.png)<!-- -->
 
-However, when I recalculated these statistics with the imputed missing values, I found the mean total number of steps taken per day to be **`r daily_mean_full`** and the median total number of steps taken per day to be **`r daily_median_full`**. 
+Earlier, I reported the mean total number of steps taken per day is **9354.23** and the median total number of steps taken per day is **10395**. 
 
-This means that the mean values differ by **`r daily_mean_full - daily_mean`** and the median values differ by **`r daily_median_full - daily_median`**. 
+However, when I recalculated these statistics with the imputed missing values, I found the mean total number of steps taken per day to be **10765.64** and the median total number of steps taken per day to be **10762**. 
+
+This means that the mean values differ by **1411.41** and the median values differ by **367**. 
 
 Thus, the impact of imputing missing data on the estimates of the total daily number of steps is to produce a histogram of total daily steps that is more nearly a normal distribution, and to correct the under-estimated mean and median number of steps taken per day caused by missing values.
 
@@ -147,7 +162,8 @@ Thus, the impact of imputing missing data on the estimates of the total daily nu
 
 1. First, I created a new factor variable, `day_type`, in the dataset with two levels, "weekday" and "weekend".
 
-```{r}
+
+```r
 activity_data_full <-
   activity_data_full %>%
   mutate(day_of_week = weekdays(date),
@@ -160,7 +176,8 @@ activity_data_full <-
 
 2. To compare differences in activity patterns between weekdays and weekends, I made a panel plot containing a time series plot of the 5-minute interval (x-axis) and the mean number of steps taken, averaged across all weekday days or weekend days (y-axis).
 
-```{r}
+
+```r
 daily_pattern_full <-
   activity_data_full %>%
   group_by(day_type, interval) %>%
@@ -173,3 +190,5 @@ ggplot(data = daily_pattern_full,
   facet_grid(day_type ~ .) +
   theme_bw()
 ```
+
+![](PA1_template_files/figure-html/unnamed-chunk-10-1.png)<!-- -->
